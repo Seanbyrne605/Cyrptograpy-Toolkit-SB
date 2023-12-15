@@ -21,8 +21,8 @@ import javax.crypto.BadPaddingException;
     public class AES  
     {  
         /* Private variable declaration */  
-        private static final String SECRET_KEY = "123456789";  
-        private static final String SALTVALUE = "abcdefg";  
+        private static final String SECRET_KEY = " e33bbfcb96deaa8513fe60757b546bf4";  
+        private static final String SALTVALUE = "";  
        
         /* Encryption Method */  
         public static String encrypt(String strToEncrypt)   
@@ -30,7 +30,7 @@ import javax.crypto.BadPaddingException;
         try   
         {  
           /* Declare a byte array. */  
-          byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  
+          byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} ;  
           IvParameterSpec ivspec = new IvParameterSpec(iv);        
           /* Create factory for secret keys. */  
           SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
@@ -91,7 +91,23 @@ import javax.crypto.BadPaddingException;
         public static void main(String[] args)   
         {  
             /* Message to be encrypted. */  
-            String originalval = "AES Encryption";  
+            String originalval = "<XML>\r\n" + //
+                "\r\n" + //
+                "  <CreditCardPurchase>\r\n" + //
+                "\r\n" + //
+                "    <Merchant>Bryanair INC.</Merchant>\r\n" + //
+                "\r\n" + //
+                "    <Buyer>Ivor Lott</Buyer>\r\n" + //
+                "\r\n" + //
+                "    <Date>01/10/2022</Date>\r\n" + //
+                "\r\n" + //
+                "    <Amount>10000.00 Euro</Amount>\r\n" + //
+                "\r\n" + //
+                "    <CCNumber>1010-9010-3412-4653</CCNumber>\r\n" + //
+                "\r\n" + //
+                "  </CreditCardPurchase>\r\n" + //
+                "\r\n" + //
+                "</XML>";  
             /* Call the encrypt() method and store result of encryption. */  
             String encryptedval = encrypt(originalval);  
             /* Call the decrypt() method and store result of decryption. */  
