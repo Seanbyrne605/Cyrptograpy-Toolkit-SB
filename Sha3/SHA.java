@@ -52,7 +52,7 @@ public class SHA {
         try {
             System.out.println("The HashCode produced by SHA-256 algorithm for strings: ");
 
-            String str = "10007";
+            String str = "221123";
             String hash = toHexStr(obtainSHA(str));
             System.out.println("\n" + str + " : " + hash);
 
@@ -65,6 +65,7 @@ public class SHA {
                 latest = toHexStr(obtainSHA(str)).substring(0, 6);
             } while (!keep.equals(latest));
 
+            System.out.println("Second string hash: " + latest);
             System.out.println("Second string with the same first 6 digits: " + number);
             str = "17541457";
             hash = toHexStr(obtainSHA(str));

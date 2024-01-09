@@ -1,5 +1,4 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SuperencryptionDecryption {
 
@@ -52,33 +51,59 @@ public class SuperencryptionDecryption {
         // Update the codebook with frequent words
         updateCodebookWithFrequentWords(codebook, frequentWordsMap);
 
-        // Decrypt the ciphertext
-        String decryptedText = decryptSuperencryption(ciphertext, codebook);
+        // Decrypt the ciphertext and get decipherments with confidence scores
+        List<Decipherment> decipherments = decryptSuperencryption(ciphertext, codebook);
 
-        System.out.println("Decrypted Text: " + decryptedText);
+        // Sort decipherments by confidence (in descending order)
+        decipherments.sort(Comparator.comparing(Decipherment::getConfidence).reversed());
+
+        // Print the sorted decipherments
+        for (Decipherment decipherment : decipherments) {
+            if( decipherment.getConfidence() == 100)
+            System.out.println("Decrypted Text: " + decipherment.getText() + ", Confidence: " + decipherment.getConfidence());
+        }
     }
 
-    private static String decryptSuperencryption(String ciphertext, Map<String, String> codebook) {
-        // Initialize a StringBuilder to store the decrypted text
-        StringBuilder decryptedText = new StringBuilder();
+    private static List<Decipherment> decryptSuperencryption(String ciphertext, Map<String, String> codebook) {
+        List<Decipherment> decipherments = new ArrayList<>();
+        generatePermutations(ciphertext, codebook, "", decipherments);
+        return decipherments;
+    }
 
-        // Iterate through the ciphertext in steps of the length of the letter sequence
-        for (int i = 0; i < ciphertext.length(); i += 3) {
-            // Extract a three-letter sequence from the ciphertext
-            String letterSequence = ciphertext.substring(i, i + 3);
-
-            // Check if the letter sequence is in the codebook
-            if (codebook.containsKey(letterSequence)) {
-                // If yes, append the corresponding word from the codebook to the decrypted text
-                decryptedText.append(codebook.get(letterSequence));
-            } else {
-                // If not, leave the letter sequence unchanged
-                decryptedText.append(letterSequence);
-            }
+    private static void generatePermutations(String remaining, Map<String, String> codebook, String currentPermutation, List<Decipherment> decipherments) {
+        if (remaining.isEmpty()) {
+            // Calculate confidence based on the frequency of words in the codebook
+            int confidence = calculateConfidence(currentPermutation, codebook);
+            decipherments.add(new Decipherment(currentPermutation, confidence));
+            return;
         }
 
-        // Convert StringBuilder to String and return the decrypted text
-        return decryptedText.toString();
+        for (int i = 3; i <= remaining.length(); i += 3) {
+            String letterSequence = remaining.substring(0, i);
+            String partialSequence = remaining.substring(0, 3);
+
+            if (codebook.containsKey(letterSequence)) {
+                // If the letter sequence is in the codebook, append the corresponding word
+                generatePermutations(remaining.substring(i), codebook, currentPermutation + codebook.get(letterSequence) + ":", decipherments);
+            } else {
+                // If not, try each word that starts or ends with the same letter
+                List<String> alternativeWords = findAlternativeWords(codebook, partialSequence);
+                for (String alternativeWord : alternativeWords) {
+                    generatePermutations(remaining.substring(i), codebook, currentPermutation + alternativeWord + ":", decipherments);
+                }
+            }
+        }
+    }
+
+    private static List<String> findAlternativeWords(Map<String, String> codebook, String partialSequence) {
+        List<String> alternatives = new ArrayList<>();
+        for (Map.Entry<String, String> entry : codebook.entrySet()) {
+            String codebookWord = entry.getKey();
+            if (codebookWord.startsWith(partialSequence.charAt(0) + "") || codebookWord.endsWith(partialSequence.charAt(2) + "")) {
+                alternatives.add(codebook.get(codebookWord));
+            }
+        }
+        return alternatives;
     }
 
     private static void updateCodebookWithFrequentWords(Map<String, String> codebook, Map<String, String> frequentWordsMap) {
@@ -89,6 +114,39 @@ public class SuperencryptionDecryption {
 
             // Update the codebook with the frequent word mapping
             codebook.put(letterSequence, correspondingWord);
+        }
+    }
+
+    private static int calculateConfidence(String text, Map<String, String> codebook) {
+        // Calculate confidence based on the frequency of words in the codebook
+        int totalWords = 0;
+        int matchingWords = 0;
+        String[] words = text.split(":");
+        for (String word : words) {
+            if (codebook.containsValue(word)) {
+                matchingWords++;
+            }
+            totalWords++;
+        }
+        return (totalWords == 0) ? 0 : (matchingWords * 100) / totalWords;
+    }
+
+    // Class to store decipherment text and confidence
+    private static class Decipherment {
+        private String text;
+        private int confidence;
+
+        public Decipherment(String text, int confidence) {
+            this.text = text;
+            this.confidence = confidence;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public int getConfidence() {
+            return confidence;
         }
     }
 }

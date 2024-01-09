@@ -1,120 +1,142 @@
 package AES;
 
-    import javax.crypto.Cipher;  
-    import javax.crypto.SecretKey;  
-    import javax.crypto.SecretKeyFactory;  
-    import javax.crypto.spec.IvParameterSpec;  
-    import javax.crypto.spec.PBEKeySpec;  
-    import javax.crypto.spec.SecretKeySpec;  
-    import java.nio.charset.StandardCharsets;  
-    import java.security.InvalidAlgorithmParameterException;  
-    import java.security.InvalidKeyException;  
-    import java.security.NoSuchAlgorithmException;  
-    import java.security.spec.InvalidKeySpecException;  
-    import java.security.spec.KeySpec;  
-    import java.util.Base64;
-import java.util.Scanner;
+import java.security.NoSuchAlgorithmException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.Key;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.*;
 
-import javax.crypto.BadPaddingException;  
-    import javax.crypto.IllegalBlockSizeException;  
-    import javax.crypto.NoSuchPaddingException;  
-    public class AES  
-    {  
-        /* Private variable declaration */  
-        private static final String SECRET_KEY = " e33bbfcb96deaa8513fe60757b546bf4";  
-        private static final String SALTVALUE = "";  
+public class AES {
+
+    public static void main(String[] args) throws Exception {
+        Scanner scr = new Scanner(System.in);
+        System.out.println("Please enter the key you will be using:");
+        String keyHex = scr.nextLine();
+
+        //using the javax crypto package import secret key and instanciat it using the inputted key
+        SecretKey secretKey = generateAESKeyFromHex(keyHex);
+
        
-        /* Encryption Method */  
-        public static String encrypt(String strToEncrypt)   
-        {  
-        try   
-        {  
-          /* Declare a byte array. */  
-          byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} ;  
-          IvParameterSpec ivspec = new IvParameterSpec(iv);        
-          /* Create factory for secret keys. */  
-          SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
-          /* PBEKeySpec class implements KeySpec interface. */  
-          KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALTVALUE.getBytes(), 65536, 256);  
-          SecretKey tmp = factory.generateSecret(spec);  
-          SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-          
-          System.out.println("Please enter the type of AES you would like to use:");
-          Scanner scr= new Scanner(System.in);
-          String s = scr.nextLine();
-          scr.close();
-          Cipher cipher = Cipher.getInstance("AES/" + s + "/PKCS5Padding");
-          
-          if(s.equals("ECB") || s.equals("ecb")|| s.equals("GCM") || s.equals("gcm"))
-          {
-          cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-   
-          }
-          else{cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);}  
-          /* Retruns encrypted value. */  
-          return Base64.getEncoder()  
-    .encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));  
-        }   
-        catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e)   
-        {  
-          System.out.println("Error occured during encryption: " + e.toString());  
-        }  
-        return null;  
-        }  
-        
-        /* Decryption Method */  
-        public static String decrypt(String strToDecrypt)   
-        {  
-        try   
-        {  
-          /* Declare a byte array. */  
-          byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  
-          IvParameterSpec ivspec = new IvParameterSpec(iv);  
-          /* Create factory for secret keys. */  
-          SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
-          /* PBEKeySpec class implements KeySpec interface. */  
-          KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALTVALUE.getBytes(), 65536, 256);  
-          SecretKey tmp = factory.generateSecret(spec);  
-          SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");  
-          Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");  
-          cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);  
-          /* Retruns decrypted value. */  
-          return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));  
-        }   
-        catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e)   
-        {  
-          System.out.println("Error occured during decryption: " + e.toString());  
-        }  
-        return null;  
-        }  
-        /* Driver Code */  
-        public static void main(String[] args)   
-        {  
-            /* Message to be encrypted. */  
-            String originalval = "<XML>\r\n" + //
-                "\r\n" + //
-                "  <CreditCardPurchase>\r\n" + //
-                "\r\n" + //
-                "    <Merchant>Bryanair INC.</Merchant>\r\n" + //
-                "\r\n" + //
-                "    <Buyer>Ivor Lott</Buyer>\r\n" + //
-                "\r\n" + //
-                "    <Date>01/10/2022</Date>\r\n" + //
-                "\r\n" + //
-                "    <Amount>10000.00 Euro</Amount>\r\n" + //
-                "\r\n" + //
-                "    <CCNumber>1010-9010-3412-4653</CCNumber>\r\n" + //
-                "\r\n" + //
-                "  </CreditCardPurchase>\r\n" + //
-                "\r\n" + //
-                "</XML>";  
-            /* Call the encrypt() method and store result of encryption. */  
-            String encryptedval = encrypt(originalval);  
-            /* Call the decrypt() method and store result of decryption. */  
-            String decryptedval = decrypt(encryptedval);  
-            /* Display the original message, encrypted message and decrypted message on the console. */  
-            System.out.println("Original value: " + originalval);  
-            System.out.println("Encrypted value: " + encryptedval);  
-            System.out.println("Decrypted value: " + decryptedval);  
-        }  
-    }  
+        // set the plain text to the XML/Whatever string supplied
+        String plaintext = "<XML>\n" +
+        "  <CreditCardPurchase>\n" +
+        "    <Merchant>Maynooth UNIV Inc</Merchant>\n" +
+        "    <Buyer>Malice Ego</Buyer>\n" +
+        "    <Date>01/10/2022</Date>\n" +
+        "    <Amount>10000.00 Euro</Amount>\n" +
+        "    <CCNumber>1010-9010-3412-4653</CCNumber>\n" +
+        "  </CreditCardPurchase>\n" +
+        "</XML>" ;
+
+        //scr.close();
+
+        // Convert plaintext to bytes
+        byte[] plaintextBytes = plaintext.getBytes(StandardCharsets.UTF_8);
+
+        // take in the initialization vecctor to be used
+        System.out.println("Please input the hex to be used as the IV (if there is no IV needed please just hit enter): ");
+        String IVstring = scr.nextLine();
+
+        scr.close();
+        // coverting the iv to a bytr array
+        byte[] iv = hexStringToByteArray(IVstring);
+
+        //encrypt the plaintext bytes using the secrete key and iv bytes
+        byte[] ciphertext = encryptAESCounterMode(plaintextBytes, secretKey, iv);
+
+       
+            //output all the values needed
+            System.out.println("The HashCode produced by SHA-256 algorithm for strings: ");
+
+            System.out.println("Plaintext: " + plaintext);
+            System.out.println("\nCiphertext: " + bytesToHex(ciphertext));
+            String sha3Hash = SHA3.sha3_512HexInput(bytesToHex(ciphertext));
+
+            if (sha3Hash != null) {
+                System.out.println("\nSHA3-512 Hash: " + sha3Hash);
+            } else {
+                System.out.println("Error calculating SHA3-512 hash.");
+            }
+
+            System.out.println("\nAnswer : " + bytesToHex(ciphertext).substring(0,6) + ":" + sha3Hash.substring(0,6));
+
+    }
+
+     private static SecretKey generateAESKeyFromHex(String keyHex) {
+        // convert secret key to byte array
+        byte[] keyBytes = hexStringToByteArray(keyHex);
+        return new SecretKeySpec(keyBytes, "AES");
+    }
+
+    private static byte[] hexStringToByteArray(String s) {
+
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    private static byte[] encryptAESCounterMode(byte[] plaintext, Key key, byte[] iv) throws Exception {
+        //get instance of AES 
+        Cipher cipher = Cipher.getInstance("AES");
+        //setit up  with the gien IV
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        //return the encrypted plaintext (ciphertext)
+        return cipher.doFinal(plaintext);
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexStringBuilder = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            hexStringBuilder.append(String.format("%02x", b));
+        }
+        return hexStringBuilder.toString();
+    }
+}
+
+  class SHA3 {
+
+    public static String sha3_512HexInput(String hexInput) {
+        try {
+            // Convert hex string to byte array
+            byte[] inputBytes = hexStringToByteArray(hexInput);
+
+            // Using MessageDigest for SHA-3
+            MessageDigest digest = MessageDigest.getInstance("SHA3-512");
+            byte[] hash = digest.digest(inputBytes);
+
+            // Convert the byte array to a hexadecimal string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static byte[] hexStringToByteArray(String hexString) {
+        int len = hexString.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
+        }
+        return data;
+    }
+ }

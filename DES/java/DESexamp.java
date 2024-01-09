@@ -10,7 +10,7 @@ import java.security.Key;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.*;
 
-public class AESCounterMode {
+public class DESexamp {
 
     public static void main(String[] args) throws Exception {
         Scanner scr = new Scanner(System.in);
@@ -18,7 +18,7 @@ public class AESCounterMode {
         String keyHex = scr.nextLine();
 
         //using the javax crypto package import secret key and instanciat it using the inputted key
-        SecretKey secretKey = generateAESKeyFromHex(keyHex);
+        SecretKey secretKey = generateDESKeyFromHex(keyHex);
 
        
         // set the plain text to the XML/Whatever string supplied
@@ -38,7 +38,7 @@ public class AESCounterMode {
         byte[] plaintextBytes = plaintext.getBytes(StandardCharsets.UTF_8);
 
         // take in the initialization vecctor to be used
-        System.out.println("Please input the hex to be used as the IV: ");
+        System.out.println("Please input the hex to be used as the IV (if there is no IV needed please just hit enter): ");
         String IVstring = scr.nextLine();
 
         scr.close();
@@ -46,7 +46,7 @@ public class AESCounterMode {
         byte[] iv = hexStringToByteArray(IVstring);
 
         //encrypt the plaintext bytes using the secrete key and iv bytes
-        byte[] ciphertext = encryptAESCounterMode(plaintextBytes, secretKey, iv);
+        byte[] ciphertext = encryptDESCounterMode(plaintextBytes, secretKey, iv);
 
        
             //output all the values needed
@@ -66,10 +66,10 @@ public class AESCounterMode {
 
     }
 
-     private static SecretKey generateAESKeyFromHex(String keyHex) {
+     private static SecretKey generateDESKeyFromHex(String keyHex) {
         // convert secret key to byte array
         byte[] keyBytes = hexStringToByteArray(keyHex);
-        return new SecretKeySpec(keyBytes, "AES");
+        return new SecretKeySpec(keyBytes, "DES");
     }
 
     private static byte[] hexStringToByteArray(String s) {
@@ -83,21 +83,11 @@ public class AESCounterMode {
         return data;
     }
 
-    private static SecretKey generateRandomAESKey() throws Exception {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128); // You can also use 192 or 256 bits
-        return keyGenerator.generateKey();
-    }
-
-    private static byte[] generateRandomIV() {
-        return "6bf70def691416316bcaa01925d3840a".getBytes(StandardCharsets.UTF_8);
-    }
-
-    private static byte[] encryptAESCounterMode(byte[] plaintext, Key key, byte[] iv) throws Exception {
-        //get instance of AES ctr with no padding
-        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+    private static byte[] encryptDESCounterMode(byte[] plaintext, Key key, byte[] iv) throws Exception {
+        //get instance of DES 
+        Cipher cipher = Cipher.getInstance("DES");
         //setit up  with the gien IV
-        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        cipher.init(Cipher.ENCRYPT_MODE, key);
         //return the encrypted plaintext (ciphertext)
         return cipher.doFinal(plaintext);
     }
